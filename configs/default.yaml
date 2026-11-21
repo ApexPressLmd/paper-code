@@ -1,0 +1,114 @@
+# Complete default configuration of PEAK-RAG (manuscript Appendix C, Table "Complete default
+# configuration"; Table "External components"; Section 3.6 and Appendix D).
+# Every value below is the one behind the reported results unless a table states otherwise.
+
+construction:                      # Algorithm 1, Section 3.2
+  conflict_similarity_delta: 0.83  # embedding similarity above which a fact pair is a candidate conflict / redundancy
+  unification_threshold: 0.86      # structural unification: merge node pairs with similarity >= 0.86
+  bridge_weights:                  # fact / ontology / source-evidence views
+    fact: 1.0
+    ontology: 0.6
+    source: 0.4
+  schema_percentile_tau: 40        # a schema is promoted only when its frequency exceeds the P40 percentile
+
+prerequisite_mining:               # Section 3.3, Algorithm 1 lines 14-19
+  omega_typed: 1.0                 # requires / precedes / based_on
+  omega_cooc: 0.5                  # earlier mention -> later mention inside one passage
+  omega_order_numerator: 0.3       # first-mention order prior: 0.3 / (j - i)
+  typed_relations: [requires, precedes, based_on]
+  typed_direction:                 # "X requires Y" / "X based_on Y": Y -> X;  "X precedes Y": X -> Y
+    requires: tail_to_head
+    based_on: tail_to_head
+    precedes: head_to_tail
+  duplicate_merge: max             # duplicate edges keep the maximum omega
+
+retrieval:                         # Section 3.3, Algorithm 2
+  lambda_mix: 0.3                  # teleport-mixing coefficient (Eq. 2); grid search, Appendix D
+  alpha_teleport: 0.15             # PPR teleport probability; NetworkX damping alpha = 1 - 0.15 = 0.85
+  ppr_max_iter: 100
+  ppr_tol: 1.0e-8                  # L1 tolerance on the change of r
+  ppr_engine: networkx             # networkx (nx.pagerank on the weighted MultiDiGraph) | power (same update in SciPy)
+  seed_top_k: 30                   # top-K facts and passages used as teleport seeds
+  passage_seed_bonus: 0.5          # "+0.5 passage" mass for the evidence passage of a retrieved fact
+  mmr_dedup: 0.97                  # MMR de-duplication similarity
+  context_budget: 12               # evidence items per sub-question
+  max_input_tokens: 4096           # per model call
+
+reasoning:                         # Section 3.4, Algorithm 3
+  classifier_shots: 6
+  denoiser_top_n: 8
+  chained_max_hops: 4
+  beam_width: 4
+  parallel_redundancy: 0.95        # parallel branch drops cross-redundant evidence at similarity >= 0.95
+  max_chain_steps: 4               # ordered path-answer calls for a chained question: 2-4
+
+gating:                            # Section 3.4, Eqs. 3-4, Section 3.6
+  k_samples: 5                     # grid search {1, 3, 5, 10}
+  sample_temperature: 0.7
+  sample_top_p: 0.9
+  answer_temperature: 0.0
+  regeneration_temperature: 0.0
+  theta_low: 0.35                  # 10% quantile of development scores (abstention budget 10%)
+  theta_high: 0.70                 # smallest development score with accepted precision >= 85%
+  abstention_budget: 0.10
+  precision_target: 0.85
+  evidence_path_facts: 6           # top-six supporting facts returned with an answer
+  max_regenerations: 1
+  # Released calibration (Section 3.6, Supplementary Table S15): fitted on the pooled development
+  # records of the five datasets (5,000 records, 3,425 positive).
+  weights: {w1: 2.0000, w2: 2.0000, w3: 1.4254, b: -3.0288}
+  l2_eta: 0.01                     # L2 penalty on w1..w3 (not on b), averaged BCE, w >= 0
+  calibration_f1_threshold: 0.80   # token-overlap metrics: y = 1 when token-level F1 >= 0.80
+
+decoding:                          # Table "External components", Decoding row (max new tokens)
+  max_new_tokens:
+    decompose_query: 256
+    build_reasoning_dag: 256
+    classifier: 8
+    answer: 512
+    path_answer: 512
+    conflict_scoring_atomic_facts: 384   # the conflict-scoring call returns atomic facts and self facts;
+    conflict_scoring_self_facts: 384     # each field has its own limit, so the call may emit up to 768 tokens
+    uncertainty_sample: 512
+    regeneration: 512
+  nli_window_tokens: 512
+  # offline construction call sites (not listed in the manuscript's decoding row)
+  offline_max_new_tokens:
+    extract_facts: 512
+    resolve_conflict: 256
+
+models:                            # Table "External components"
+  generator: {name: Qwen/Qwen2.5-7B-Instruct, revision: a09a354, dtype: bfloat16}
+  embedder: {name: BAAI/bge-m3, revision: 5617a9f, dim: 1024, max_tokens: 8192}
+  nli: {name: MoritzLaurer/mDeBERTa-v3-base-mnli-xnli, revision: 8adb042, dtype: float32}
+  # the full revision hashes of the next two models must be filled in from the run logs before release
+  evaluator: {name: Qwen/Qwen2.5-14B-Instruct, revision: null, dtype: bfloat16}
+  independent_verifier: {name: CohereLabs/aya-23-8B, revision: null, dtype: bfloat16}
+  second_backbone: {name: CohereLabs/aya-23-8B, context: 8192}
+
+evaluation:                        # Sections 4.1, 4.3, 4.7; Appendix C
+  seeds: [17, 29, 43, 71, 101]
+  resampling_seed_main: 20261003   # Table 5 (paired comparisons)
+  resampling_seed_supp: 20261004   # supplementary analyses
+  n_bootstrap: 10000
+  n_permutations: 10000
+  ece_bins: 10                     # equal-frequency bins
+  evaluator:                       # claim-level evaluator prompts (not specified in the manuscript)
+    decompose_max_new_tokens: 384
+    judge_max_new_tokens: 4
+  confidence_level: 0.95
+  dev_questions_per_dataset: 1000
+  test_questions_per_dataset: 1000
+  unanswerable_per_dataset: 100    # evidence-removal unanswerable test questions (500 in total)
+  comparators:                     # pre-specified strongest re-run baseline per dataset (Table 5)
+    MLPQ: Yuan et al.
+    XMQAs: LAMRF
+    TempRAG: MI-RAG
+    BioASQ: PARKA
+    Open-ViTabQA: Ren et al.
+  primary_metric:
+    MLPQ: hits_at_1
+    XMQAs: f1
+    TempRAG: context_faithfulness
+    BioASQ: accuracy
+    Open-ViTabQA: exact_match

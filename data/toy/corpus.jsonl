@@ -1,0 +1,14 @@
+{"doc_id": "statics", "title": "statics", "text": "Statics precedes strength of materials. Free body diagrams are part of statics. Equilibrium of forces is based on Newton's laws. Statics requires equilibrium of forces."}
+{"doc_id": "strength", "title": "strength", "text": "Strength of materials requires statics. Stress analysis is based on strength of materials. Bending moment increases bending stress. Yield strength is measured by a tensile test."}
+{"doc_id": "concentration", "title": "concentration", "text": "Stress concentration requires stress analysis. A keyway increases stress concentration. A shoulder fillet reduces stress concentration. Stress concentration is measured by the stress concentration factor."}
+{"doc_id": "fatigue", "title": "fatigue", "text": "Fatigue failure requires stress concentration. Fatigue failure is based on the S-N curve. Cyclic loading causes fatigue failure. Surface finish reduces fatigue strength."}
+{"doc_id": "shaft", "title": "shaft", "text": "Shaft design requires fatigue failure. Shaft design requires bending stress. A rotating shaft is used in gearboxes. Shaft diameter reduces bending stress."}
+{"doc_id": "gears", "title": "gears", "text": "Gear design requires shaft design. Gear tooth bending is based on the Lewis equation. Gear contact stress causes pitting. Lubrication reduces pitting."}
+{"doc_id": "bearings", "title": "bearings", "text": "Bearing selection requires shaft design. Bearing life is measured by the L10 rating. Misalignment reduces bearing life. Preload increases bearing stiffness."}
+{"doc_id": "materials", "title": "materials", "text": "Heat treatment increases yield strength. Alloy steel is used in shafts. Material selection precedes shaft design. Corrosion reduces fatigue strength."}
+{"doc_id": "couplings_a", "title": "couplings_a", "text": "A flexible coupling reduces shaft misalignment."}
+{"doc_id": "keys_a", "title": "keys_a", "text": "A parallel key is used in hub connections."}
+{"doc_id": "couplings_b", "title": "couplings_b", "text": "Coupling selection requires shaft design."}
+{"doc_id": "keys_b", "title": "keys_b", "text": "Key design requires shear stress."}
+{"doc_id": "springs_a", "title": "springs_a", "text": "Spring rate is measured by a load test."}
+{"doc_id": "springs_b", "title": "springs_b", "text": "Spring design requires shear stress."}

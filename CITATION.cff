@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "PEAK-RAG: prerequisite-aware retrieval and calibrated abstention for technical question answering"
+version: 1.0.0
+authors:
+  - family-names: Ma
+    given-names: Xiuming
+    affiliation: "Intelligent Manufacturing Department, Wuzhong Secondary Vocational School, Suzhou, China"
+license: MIT
+# doi: 10.5281/zenodo.XXXXXXX   (added on deposit)
